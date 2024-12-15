@@ -1,0 +1,40 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/title_language_category">
+        <ListPreference
+            app:title="@string/title_language_settings"
+            app:key="languagePrefs"
+            app:entries="@array/language_names"
+            app:entryValues="@array/language_values"
+            app:defaultValue="en"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/title_units_category">
+        <ListPreference
+            app:title="@string/title_temp_settings"
+            app:key="temperaturePrefs"
+            app:entries="@array/temperature_names"
+            app:entryValues="@array/temperature_values"
+            app:defaultValue="celsius"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:title="@string/title_wind_settings"
+            app:key="windSpeedPrefs"
+            app:entries="@array/wind_speed_names"
+            app:entryValues="@array/wind_speed_values"
+            app:defaultValue="kmh"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:title="@string/title_air_pressure_settings"
+            app:key="airPressurePrefs"
+            app:entries="@array/air_pressure_names"
+            app:entryValues="@array/air_pressure_values"
+            app:defaultValue="hpa"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

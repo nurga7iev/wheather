@@ -1,0 +1,45 @@
+<resources>
+    <string-array name="language_names">
+        <item>English</item>
+        <item>Русский</item>
+    </string-array>
+
+    <string-array name="language_values">
+        <item>en</item>
+        <item>ru</item>
+    </string-array>
+
+    <string-array name="temperature_names">
+        <item>@string/temperature_name_celsius</item>
+        <item>@string/temperature_name_fahrenheit</item>
+    </string-array>
+
+    <string-array name="temperature_values">
+        <item>celsius</item>
+        <item>fahrenheit</item>
+    </string-array>
+
+    <string-array name="wind_speed_names">
+        <item>@string/speed_name_kmh</item>
+        <item>@string/speed_name_ms</item>
+        <item>@string/speed_name_mph</item>
+    </string-array>
+
+    <string-array name="wind_speed_values">
+        <item>kmh</item>
+        <item>ms</item>
+        <item>mph</item>
+    </string-array>
+
+    <string-array name="air_pressure_names">
+        <item>@string/air_pressure_name_hpa</item>
+        <item>@string/air_pressure_name_mmhg</item>
+        <item>@string/air_pressure_name_inhg</item>
+    </string-array>
+
+    <string-array name="air_pressure_values">
+        <item>hpa</item>
+        <item>mmhg</item>
+        <item>inhg</item>
+    </string-array>
+</resources>
