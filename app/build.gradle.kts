@@ -53,7 +53,6 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.gridlayout)
-
     implementation(libs.mpandroidChart)
     implementation(libs.roundCornerprogressbar)
     implementation(libs.legacy.support.v4)
@@ -62,19 +61,14 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.swiperefreshlayout)
     implementation(libs.fragment)
-
     implementation(libs.lombok)
     implementation(libs.preference)
     annotationProcessor(libs.lombok)
-
     implementation(libs.datastore.core)
     implementation(libs.datastore.rxjava3)
     implementation(libs.rxandroid)
-
     implementation(libs.blurview)
     implementation(libs.locale.helper.android)
-
-
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

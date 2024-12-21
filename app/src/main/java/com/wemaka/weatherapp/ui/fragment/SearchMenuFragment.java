@@ -24,22 +24,23 @@ import com.wemaka.weatherapp.databinding.FragmentSearchMenuBinding;
 import com.wemaka.weatherapp.store.proto.LocationCoordProto;
 import com.wemaka.weatherapp.ui.MainActivity;
 import com.wemaka.weatherapp.ui.viewmodel.MainViewModel;
+import com.wemaka.weatherapp.ui.WeatherDatabaseHelper; // Подключаем класс базы данных
 
 import eightbitlab.com.blurview.BlurViewFacade;
 import eightbitlab.com.blurview.RenderEffectBlur;
 import eightbitlab.com.blurview.RenderScriptBlur;
 
-
 public class SearchMenuFragment extends BottomSheetDialogFragment {
 	public static final String TAG = "SearchMenuFragment";
 	private FragmentSearchMenuBinding binding;
 	private MainViewModel model;
+	private WeatherDatabaseHelper dbHelper; // Создаем объект для работы с базой данных
 
 	@Nullable
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater,
-	                         @Nullable ViewGroup container,
-	                         @Nullable Bundle savedInstanceState) {
+							 @Nullable ViewGroup container,
+							 @Nullable Bundle savedInstanceState) {
 		binding = FragmentSearchMenuBinding.inflate(getLayoutInflater());
 		return binding.getRoot();
 	}
@@ -49,6 +50,7 @@ public class SearchMenuFragment extends BottomSheetDialogFragment {
 		super.onViewCreated(view, savedInstanceState);
 
 		model = ((MainActivity) requireActivity()).getModel();
+		dbHelper = new WeatherDatabaseHelper(requireContext()); // Инициализируем базу данных
 
 		addBlurBackground();
 
@@ -56,6 +58,18 @@ public class SearchMenuFragment extends BottomSheetDialogFragment {
 		searchMenuAdapter.setOnItemClickListener(item -> {
 			Log.i(TAG, "Click: " + item.getLatitude() + " : " + item.getLongitude());
 
+			// Записываем выбранное название в поле ввода
+			String locationName = String.valueOf(item.getLocationName()); // Используем getLocationName(), если оно существует в классе PlaceInfo
+			binding.searchView.setQuery(locationName, false);
+
+			// Сохраняем запрос в базу данных
+			if (dbHelper.insertQuery(locationName)) {
+				Log.i(TAG, "Query saved to database: " + locationName);
+			} else {
+				Log.e(TAG, "Failed to save query to database");
+			}
+
+			// Загружаем погоду по выбранному местоположению
 			model.fetchWeatherAndPlace(
 					new LocationCoordProto(
 							Double.parseDouble(item.getLatitude()),
@@ -63,7 +77,7 @@ public class SearchMenuFragment extends BottomSheetDialogFragment {
 					)
 			);
 
-			dismiss();
+			dismiss();  // Закрываем фрагмент
 		});
 
 		binding.rvSearchList.setAdapter(searchMenuAdapter);
@@ -73,10 +87,16 @@ public class SearchMenuFragment extends BottomSheetDialogFragment {
 			public boolean onQueryTextSubmit(String query) {
 				Log.i(TAG, "Click request search");
 
+				// Сохраняем запрос в базу данных
+				if (dbHelper.insertQuery(query)) {
+					Log.i(TAG, "Query saved to database: " + query);
+				} else {
+					Log.e(TAG, "Failed to save query to database");
+				}
+
 				model.searchLocation(query).observe(getViewLifecycleOwner(), resource -> {
 					if (resource.isSuccess() && resource.getData() != null) {
 						searchMenuAdapter.submitList(resource.getData());
-
 					} else if (resource.isError() && resource.getMessage() != null) {
 						showToast(resource.getMessage());
 					}
@@ -124,7 +144,6 @@ public class SearchMenuFragment extends BottomSheetDialogFragment {
 
 		View decorView = requireActivity().getWindow().getDecorView();
 		ViewGroup rootView = decorView.findViewById(android.R.id.content);
-//		Drawable windowBackground = decorView.getBackground();
 
 		BlurViewFacade blur;
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

@@ -13,4 +13,8 @@ public class PlaceInfo {
 	private final String adminName1;
 	private final String latitude;
 	private final String longitude;
+
+	public int getLocationName() {
+		return 0;
+	}
 }

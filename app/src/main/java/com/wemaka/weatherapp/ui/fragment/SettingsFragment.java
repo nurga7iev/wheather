@@ -1,5 +1,6 @@
 package com.wemaka.weatherapp.ui.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,14 +12,17 @@ import androidx.annotation.Nullable;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceScreen;
 
 import com.wemaka.weatherapp.R;
+import com.wemaka.weatherapp.ui.SearchResultActivity;
+
+import com.wemaka.weatherapp.ui.MainActivity;
 import com.wemaka.weatherapp.data.api.GeoNamesClient;
 import com.wemaka.weatherapp.data.api.OpenMeteoClient;
 import com.wemaka.weatherapp.store.proto.PressureUnitProto;
 import com.wemaka.weatherapp.store.proto.SpeedUnitProto;
 import com.wemaka.weatherapp.store.proto.TemperatureUnitProto;
-import com.wemaka.weatherapp.ui.MainActivity;
 import com.wemaka.weatherapp.ui.viewmodel.MainViewModel;
 
 import java.util.Locale;
@@ -29,11 +33,17 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 	public static final String PREF_KEY_TEMPERATURE = "temperaturePrefs";
 	public static final String PREF_KEY_WIND_SPEED = "windSpeedPrefs";
 	public static final String PREF_KEY_AIR_PRESSURE = "airPressurePrefs";
+	public static final String PREF_KEY_SEARCH_HISTORY = "searchHistoryPrefs";
 	private MainViewModel model;
 
 	@Override
 	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
 		setPreferencesFromResource(R.xml.root_preferences, rootKey);
+	}
+
+
+	public static SettingsFragment newInstance() {
+		return new SettingsFragment();
 	}
 
 	@NonNull
@@ -51,15 +61,12 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 		setSettingsListeners();
 	}
 
-	public static SettingsFragment newInstance() {
-		return new SettingsFragment();
-	}
-
 	private void setSettingsListeners() {
 		ListPreference languageList = getPreferenceManager().findPreference(PREF_KEY_LANGUAGE);
 		ListPreference temperatureList = getPreferenceManager().findPreference(PREF_KEY_TEMPERATURE);
 		ListPreference windSpeedList = getPreferenceManager().findPreference(PREF_KEY_WIND_SPEED);
 		ListPreference pressureList = getPreferenceManager().findPreference(PREF_KEY_AIR_PRESSURE);
+		PreferenceScreen screen = getPreferenceScreen();
 
 		if (languageList != null) {
 			languageList.setOnPreferenceChangeListener(getLanguagePrefsListener());
@@ -76,6 +83,19 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 		if (pressureList != null) {
 			pressureList.setOnPreferenceChangeListener(getPressureListener());
 		}
+
+		// Добавляем Preference для кнопки "История запросов"
+		Preference searchHistoryPreference = new Preference(requireContext());
+		searchHistoryPreference.setKey(PREF_KEY_SEARCH_HISTORY);
+		searchHistoryPreference.setTitle(R.string.search_history_title);
+		searchHistoryPreference.setSummary(R.string.search_history_summary);
+		searchHistoryPreference.setOnPreferenceClickListener(preference -> {
+			Intent intent = new Intent(requireContext(), SearchResultActivity.class);
+			startActivity(intent);
+			return true;
+		});
+
+		screen.addPreference(searchHistoryPreference);
 	}
 
 	private Preference.OnPreferenceChangeListener getLanguagePrefsListener() {

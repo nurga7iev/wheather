@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="search_history_summary">история</string>
+    <string name="search_history_title">ИСтория поиск</string>
     <string name="air_pressure_insert_hpa">%1$d гПа</string>
     <string name="air_pressure_insert_mmhg">%1$d мм. рт. ст.</string>
     <string name="air_pressure_insert_inhg">%1$d дюйм рт. ст.</string>

@@ -1,6 +1,8 @@
 package com.wemaka.weatherapp.ui;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.core.graphics.Insets;
@@ -23,6 +25,30 @@ public class MainActivity extends LocaleAwareCompatActivity {
 	private ActivityMainBinding binding;
 	@Getter
 	private MainViewModel model;
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		// Проверка, передан ли город из SearchResultActivity
+		if (getIntent().hasExtra("selected_city")) {
+			String city = getIntent().getStringExtra("selected_city");
+			if (city != null) {
+				Log.d(TAG, "Получен город: " + city);
+				// Вызов метода для отображения погоды по выбранному городу
+				fetchWeatherForCity(city);
+				getIntent().removeExtra("selected_city"); // Очистка данных после использования
+			}
+			else {
+				Log.d(TAG, "selected_city отсутствует в Intent");
+			}
+		}
+	}
+
+	private void fetchWeatherForCity(String city) {
+		// Реализуйте ваш метод для загрузки данных о погоде
+		Toast.makeText(this, "Загрузка погоды для города: " + city, Toast.LENGTH_SHORT).show();
+	}
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

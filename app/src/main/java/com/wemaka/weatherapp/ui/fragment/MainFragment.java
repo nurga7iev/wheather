@@ -34,6 +34,7 @@ import com.wemaka.weatherapp.store.proto.DaysForecastProto;
 import com.wemaka.weatherapp.store.proto.LocationCoordProto;
 import com.wemaka.weatherapp.store.proto.SettingsProto;
 import com.wemaka.weatherapp.ui.MainActivity;
+import com.wemaka.weatherapp.ui.SearchResultActivity;
 import com.wemaka.weatherapp.ui.viewmodel.MainViewModel;
 import com.wemaka.weatherapp.util.Resource;
 
@@ -49,14 +50,18 @@ public class MainFragment extends Fragment {
 	private final ActivityResultLauncher<String[]> locationPermissionRequest =
 			registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), this::onLocationPermissionResult);
 
+	public static MainFragment newInstance() {
+		return new MainFragment();
+	}
 
 	@Nullable
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater,
-	                         @Nullable ViewGroup container,
-	                         @Nullable Bundle savedInstanceState) {
-		binding = FragmentMainBinding.inflate(getLayoutInflater());
+							 @Nullable ViewGroup container,
+							 @Nullable Bundle savedInstanceState) {
+		binding = FragmentMainBinding.inflate(inflater, container, false);
 
+		// Other initializations
 		getChildFragmentManager()
 				.beginTransaction()
 				.replace(binding.flTodayWeather.getId(), TodayWeatherFragment.newInstance())
@@ -74,52 +79,25 @@ public class MainFragment extends Fragment {
 		handleLocationPermission();
 		initUi();
 		observeViewModel();
-	}
 
-	@Override
-	public void onStop() {
-		super.onStop();
+		// Set listener for history button
 
-		Log.i(TAG, "ON STOP");
-
-		Resource<String> resourcePlaceInfo = model.getPlaceName().getValue();
-		Resource<DaysForecastProto> resourceForecast = model.getDaysForecast().getValue();
-		LocationCoordProto coord = model.getLocation();
-
-		if (coord == null) {
-			coord = new LocationCoordProto(
-					LocationService.DEFAULT_COORD[0],
-					LocationService.DEFAULT_COORD[1]);
-		}
-
-		if (resourcePlaceInfo != null && resourcePlaceInfo.getData() != null && resourceForecast != null) {
-			DataStoreProto dataStoreProto = new DataStoreProto(
-					new SettingsProto(coord, resourcePlaceInfo.getData()),
-					resourceForecast.getData()
-			);
-
-			model.saveDataStore(dataStoreProto);
-		}
-	}
-
-	public static MainFragment newInstance() {
-		return new MainFragment();
 	}
 
 	private void initUi() {
 		binding.swipeRefresh.setOnRefreshListener(() -> {
-					Log.i(TAG, "onRefresh called from SwipeRefreshLayout");
-					handleLocationPermission();
-					model.fetchCurrentWeatherAndPlace();
-				}
-		);
-
-		binding.searchBtn.setOnClickListener(v -> {
-			SearchMenuFragment searchBottomSheet = SearchMenuFragment.newInstance();
-			searchBottomSheet.show(requireActivity().getSupportFragmentManager(),
-					"SearchBottomSheet");
+			Log.i(TAG, "onRefresh called from SwipeRefreshLayout");
+			handleLocationPermission();
+			model.fetchCurrentWeatherAndPlace();
 		});
 
+		// Search button listener
+		binding.searchBtn.setOnClickListener(v -> {
+			SearchMenuFragment searchBottomSheet = SearchMenuFragment.newInstance();
+			searchBottomSheet.show(requireActivity().getSupportFragmentManager(), "SearchBottomSheet");
+		});
+
+		// Settings button listener
 		binding.settingsBtn.setOnClickListener(v -> {
 			Animator animator = AnimatorInflater.loadAnimator(requireContext(), R.animator.slide_left);
 			animator.setTarget(binding.swipeRefresh);
@@ -127,17 +105,13 @@ public class MainFragment extends Fragment {
 
 			MainSettingsFragment settingsFragment = MainSettingsFragment.newInstance();
 			requireActivity().getSupportFragmentManager().beginTransaction()
-					.setCustomAnimations(
-							R.anim.slide_in_right,
-							R.anim.slide_out_right,
-							R.anim.slide_in_right,
-							R.anim.slide_out_right
-					)
+					.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_right, R.anim.slide_in_right, R.anim.slide_out_right)
 					.replace(R.id.fragment_container, settingsFragment)
 					.addToBackStack(null)
 					.commit();
 		});
 
+		// MotionLayout transition listener
 		binding.motionLayout.setTransitionListener(new MotionLayout.TransitionListener() {
 			@Override
 			public void onTransitionStarted(MotionLayout motionLayout, int startId, int endId) {
@@ -165,10 +139,10 @@ public class MainFragment extends Fragment {
 		SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
 		SimpleDateFormat monthFormat = new SimpleDateFormat("MMMM", Locale.getDefault());
 
+		// Observe weather forecast data
 		model.getDaysForecast().observe(getViewLifecycleOwner(), resource -> {
 			if (resource.isLoading()) {
 				binding.swipeRefresh.setRefreshing(true);
-
 			} else if (resource.isSuccess() && resource.getData() != null) {
 				binding.swipeRefresh.setRefreshing(false);
 
@@ -192,10 +166,10 @@ public class MainFragment extends Fragment {
 			}
 		});
 
+		// Observe place name data
 		model.getPlaceName().observe(getViewLifecycleOwner(), resource -> {
 			if (resource.isSuccess() && resource.getData() != null) {
 				binding.tvCityCountry.setText(resource.getData());
-
 			} else if (resource.isError()) {
 				Log.i(TAG, resource.getErrorMes().orElse(""));
 			}
@@ -219,27 +193,19 @@ public class MainFragment extends Fragment {
 	}
 
 	private void onLocationPermissionResult(Map<String, Boolean> result) {
-		Boolean fineLocationGranted = result.getOrDefault(
-				Manifest.permission.ACCESS_FINE_LOCATION, false);
-		Boolean coarseLocationGranted = result.getOrDefault(
-				Manifest.permission.ACCESS_COARSE_LOCATION, false);
+		Boolean fineLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
+		Boolean coarseLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
 
 		if ((fineLocationGranted != null && fineLocationGranted) || (coarseLocationGranted != null && coarseLocationGranted)) {
 			ensureLocationProviderEnabled();
 		} else {
 			Log.i(TAG, "No location access granted");
 		}
-
-//		model.fetchCurrentWeatherAndPlace();
 	}
 
 	private void handleLocationPermission() {
 		if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-				ActivityCompat.checkSelfPermission(requireContext(),
-						Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-//			model.fetchCurrentWeatherAndPlace();
-
+				ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 			ensureLocationProviderEnabled();
 		} else {
 			locationPermissionRequest.launch(new String[]{
@@ -247,13 +213,10 @@ public class MainFragment extends Fragment {
 					Manifest.permission.ACCESS_COARSE_LOCATION
 			});
 		}
-
-//		model.fetchCurrentWeatherAndPlace();
 	}
 
 	private void ensureLocationProviderEnabled() {
-		LocationManager lm =
-				(LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
+		LocationManager lm = (LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
 		if (!(lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER) || lm.isProviderEnabled(LocationManager.GPS_PROVIDER))) {
 			Snackbar.make(binding.clMain, R.string.provider_absence_notification,
 							Snackbar.LENGTH_LONG)

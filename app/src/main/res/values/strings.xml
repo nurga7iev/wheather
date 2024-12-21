@@ -21,6 +21,9 @@
         <item>Sat</item>
         <item>Sun</item>
     </string-array>
+    search_history_summary
+    <string name="search_history_summary">search_history_summary</string>
+    <string name="search_history_title">Search History</string>
     <string name="degree_day_night">Day %1$d°\nNight %2$d°</string>
     <string name="degree_default" translatable="false">20°</string>
     <string name="degree_feels_like">Feels like %1$s</string>
